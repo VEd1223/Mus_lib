@@ -9,17 +9,24 @@
 <body>
     <header>
         <h1>مكتبة الكتب</h1>
-        <p>مرحبًا بكم في مكتبة الكتب الخاصة بنا! اختر الكتاب الذي تريد قراءته.</p>
+        <p>مرحبًا بكم في مكتبة الكتب الخاصة بنا! اختر الكتاب الذي تريد قراءته أو تنزيله.</p>
     </header>
 
     <div class="book-gallery">
-        <div class="book-item" onclick="openBook('books/book1.pdf')">
+        <!-- Book 1 -->
+        <div class="book-item">
             <img src="images/book1.jpg" alt="كتاب 1">
             <p>كتاب 1</p>
+            <button onclick="openBook('books/book1.pdf')">قراءة الكتاب</button>
+            <button onclick="downloadBook('books/book1.pdf')">تحميل الكتاب</button>
         </div>
-        <div class="book-item" onclick="openBook('books/book2.pdf')">
+
+        <!-- Book 2 -->
+        <div class="book-item">
             <img src="images/book2.jpg" alt="كتاب 2">
             <p>كتاب 2</p>
+            <button onclick="openBook('books/book2.pdf')">قراءة الكتاب</button>
+            <button onclick="downloadBook('books/book2.pdf')">تحميل الكتاب</button>
         </div>
     </div>
 
@@ -28,8 +35,17 @@
     </footer>
 
     <script>
+        // Function to open the book in a new tab for reading
         function openBook(bookPath) {
-            window.open(bookPath, '_blank');
+            window.open(bookPath, '_blank'); // Open the book in a new tab
+        }
+
+        // Function to download the book
+        function downloadBook(bookPath) {
+            const a = document.createElement('a');
+            a.href = bookPath; // Link to the book file
+            a.download = bookPath.split('/').pop(); // Set the filename for download
+            a.click(); // Trigger the download
         }
     </script>
 </body>
