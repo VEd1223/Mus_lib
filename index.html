@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مكتبة الكتب</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Optional styles to center and style the viewer */
+        #pdf-viewer {
+            display: none;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -30,14 +40,23 @@
         </div>
     </div>
 
+    <!-- PDF Viewer Section -->
+    <div id="pdf-viewer">
+        <h2>عرض الكتاب</h2>
+        <iframe id="pdf-frame" width="100%" height="600px" src=""></iframe>
+    </div>
+
     <footer>
         <p>&copy; 2025 مكتبة الكتب. جميع الحقوق محفوظة.</p>
     </footer>
 
     <script>
-        // Function to open the book in a new tab for reading
+        // Function to open the book in the embedded PDF viewer
         function openBook(bookPath) {
-            window.open(bookPath, '_blank'); // Open the book in a new tab
+            const viewer = document.getElementById('pdf-viewer');
+            const iframe = document.getElementById('pdf-frame');
+            iframe.src = bookPath; // Set the PDF source for the iframe
+            viewer.style.display = 'block'; // Show the PDF viewer
         }
 
         // Function to download the book
