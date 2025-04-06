@@ -26,6 +26,38 @@
             text-align: center;
             margin-top: 10px;
         }
+
+        /* Quiz Popup Styling */
+        #quiz-popup {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.7);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #quiz-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .quiz-option {
+            display: block;
+            margin: 10px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -39,7 +71,7 @@
         <div class="book-item">
             <img src="images/book1.jpg" alt="كتاب 1">
             <p>كتاب 1</p>
-            <button onclick="openBook('books/book1.pdf')">قراءة الكتاب</button>
+            <button onclick="openBook('books/book1.pdf', 1)">قراءة الكتاب</button>
             <button onclick="downloadBook('books/book1.pdf')">تحميل الكتاب</button>
         </div>
 
@@ -47,9 +79,12 @@
         <div class="book-item">
             <img src="images/book2.jpg" alt="كتاب 2">
             <p>كتاب 2</p>
-            <button onclick="openBook('books/book2.pdf')">قراءة الكتاب</button>
+            <button onclick="openBook('books/book2.pdf', 2)">قراءة الكتاب</button>
             <button onclick="downloadBook('books/book2.pdf')">تحميل الكتاب</button>
         </div>
+
+        <!-- More Books can be added below -->
+        <!-- Just copy the pattern of Book 1 and Book 2 -->
     </div>
 
     <!-- PDF Viewer Section -->
@@ -66,6 +101,16 @@
         </div>
     </div>
 
+    <!-- Quiz Popup Section -->
+    <div id="quiz-popup">
+        <div id="quiz-container">
+            <h3>اختبر معرفتك!</h3>
+            <p id="quiz-question"></p>
+            <div id="quiz-options"></div>
+            <button onclick="closeQuiz()">إغلاق</button>
+        </div>
+    </div>
+
     <footer>
         <p>&copy; 2025 مكتبة الكتب. جميع الحقوق محفوظة.</p>
     </footer>
@@ -77,9 +122,24 @@
         let pdfDoc = null;
         let currentPage = 1;
         let zoomLevel = 1.0;
+        let currentBook = null;
+        let userProgress = JSON.parse(localStorage.getItem('userProgress')) || {};
+        let quizzes = {
+            1: { // Quiz for Book 1
+                question: "ما هو عنوان الكتاب؟",
+                options: ["عنوان 1", "عنوان 2", "عنوان 3", "عنوان 4"],
+                answer: "عنوان 1"
+            },
+            2: { // Quiz for Book 2
+                question: "من هو مؤلف الكتاب؟",
+                options: ["مؤلف 1", "مؤلف 2", "مؤلف 3", "مؤلف 4"],
+                answer: "مؤلف 1"
+            }
+        };
 
         // Function to open the book in the PDF.js viewer
-        function openBook(bookPath) {
+        function openBook(bookPath, bookId) {
+            currentBook = bookId;
             const viewer = document.getElementById('pdf-viewer');
             viewer.style.display = 'block'; // Show the PDF viewer
             const canvas = document.getElementById('pdf-canvas');
@@ -90,6 +150,9 @@
                 pdfDoc = pdf;
                 renderPage(currentPage, canvas, ctx);
             });
+
+            // Load progress if available
+            loadProgress(bookId);
         }
 
         // Function to render the current page
@@ -113,6 +176,11 @@
                 const canvas = document.getElementById('pdf-canvas');
                 const ctx = canvas.getContext('2d');
                 renderPage(currentPage, canvas, ctx);
+                saveProgress(currentBook);
+            }
+
+            if (currentPage === pdfDoc.numPages) {
+                showQuiz(currentBook);
             }
         }
 
@@ -123,6 +191,7 @@
                 const canvas = document.getElementById('pdf-canvas');
                 const ctx = canvas.getContext('2d');
                 renderPage(currentPage, canvas, ctx);
+                saveProgress(currentBook);
             }
         }
 
@@ -142,12 +211,74 @@
             renderPage(currentPage, canvas, ctx);
         }
 
+        // Function to save the user's reading progress to localStorage
+        function saveProgress(bookId) {
+            if (!bookId) return;
+            userProgress[bookId] = {
+                page: currentPage
+            };
+            localStorage.setItem('userProgress', JSON.stringify(userProgress));
+        }
+
+        // Function to load the user's progress for a specific book
+        function loadProgress(bookId) {
+            if (userProgress[bookId]) {
+                currentPage = userProgress[bookId].page || 1;
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                renderPage(currentPage, canvas, ctx);
+            }
+        }
+
         // Function to download the book
         function downloadBook(bookPath) {
             const a = document.createElement('a');
-            a.href = bookPath; // Link to the book file
-            a.download = bookPath.split('/').pop(); // Set the filename for download
-            a.click(); // Trigger the download
+            a.href = bookPath;
+            a.download = bookPath.split('/').pop();
+            a.click();
+        }
+
+        // Show the quiz after the book ends
+        function showQuiz(bookId) {
+            const quiz = quizzes[bookId];
+            if (!quiz) return;
+
+            const quizPopup = document.getElementById('quiz-popup');
+            const quizQuestion = document.getElementById('quiz-question');
+            const quizOptions = document.getElementById('quiz-options');
+
+            quizQuestion.textContent = quiz.question;
+            quizOptions.innerHTML = '';
+            quiz.options.forEach(function(option) {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('quiz-option');
+                optionElement.textContent = option;
+                optionElement.onclick = function() {
+                    checkAnswer(option, quiz.answer, quizPopup);
+                };
+                quizOptions.appendChild(optionElement);
+            });
+
+            quizPopup.style.display = 'flex'; // Show quiz popup
+        }
+
+        // Check if the selected answer is correct
+        function checkAnswer(selected, correctAnswer, quizPopup) {
+            if (selected === correctAnswer) {
+                alert('إجابة صحيحة! يمكنك الاستمرار.');
+                quizPopup.style.display = 'none';
+                nextPage();
+            } else {
+                alert('إجابة خاطئة. من فضلك راجع آخر صفحة.');
+                quizPopup.style.display = 'none';
+                prevPage();
+            }
+        }
+
+        // Close the quiz
+        function closeQuiz() {
+            const quizPopup = document.getElementById('quiz-popup');
+            quizPopup.style.display = 'none';
         }
     </script>
 </body>
