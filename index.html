@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مكتبة الكتب</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>مكتبة الكتب</h1>
+        <p>مرحبًا بكم في مكتبة الكتب الخاصة بنا! اختر الكتاب الذي تريد قراءته.</p>
+    </header>
+
+    <div class="book-gallery">
+        <div class="book-item" onclick="openBook('books/book1.pdf')">
+            <img src="images/book1.jpg" alt="كتاب 1">
+            <p>كتاب 1</p>
+        </div>
+        <div class="book-item" onclick="openBook('books/book2.pdf')">
+            <img src="images/book2.jpg" alt="كتاب 2">
+            <p>كتاب 2</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 مكتبة الكتب. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        function openBook(bookPath) {
+            window.open(bookPath, '_blank');
+        }
+    </script>
+</body>
+</html>
