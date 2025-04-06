@@ -6,13 +6,25 @@
     <title>مكتبة الكتب</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Optional styles to center and style the viewer */
+        /* Styling for the PDF viewer */
         #pdf-viewer {
             display: none;
             margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 10px;
             text-align: center;
+        }
+
+        #canvas-container {
+            margin-top: 20px;
+        }
+
+        canvas {
+            width: 100%;
+            border: 1px solid #ddd;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -43,20 +55,91 @@
     <!-- PDF Viewer Section -->
     <div id="pdf-viewer">
         <h2>عرض الكتاب</h2>
-        <iframe id="pdf-frame" width="100%" height="600px" src=""></iframe>
+        <div id="canvas-container">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+        <div class="controls">
+            <button onclick="prevPage()">السابق</button>
+            <button onclick="nextPage()">التالي</button>
+            <button onclick="zoomIn()">تكبير</button>
+            <button onclick="zoomOut()">تصغير</button>
+        </div>
     </div>
 
     <footer>
         <p>&copy; 2025 مكتبة الكتب. جميع الحقوق محفوظة.</p>
     </footer>
 
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    
     <script>
-        // Function to open the book in the embedded PDF viewer
+        let pdfDoc = null;
+        let currentPage = 1;
+        let zoomLevel = 1.0;
+
+        // Function to open the book in the PDF.js viewer
         function openBook(bookPath) {
             const viewer = document.getElementById('pdf-viewer');
-            const iframe = document.getElementById('pdf-frame');
-            iframe.src = bookPath; // Set the PDF source for the iframe
             viewer.style.display = 'block'; // Show the PDF viewer
+            const canvas = document.getElementById('pdf-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Loading the PDF
+            pdfjsLib.getDocument(bookPath).promise.then(function (pdf) {
+                pdfDoc = pdf;
+                renderPage(currentPage, canvas, ctx);
+            });
+        }
+
+        // Function to render the current page
+        function renderPage(pageNum, canvas, ctx) {
+            pdfDoc.getPage(pageNum).then(function (page) {
+                const viewport = page.getViewport({ scale: zoomLevel });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                page.render({
+                    canvasContext: ctx,
+                    viewport: viewport
+                });
+            });
+        }
+
+        // Navigate to the next page
+        function nextPage() {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                renderPage(currentPage, canvas, ctx);
+            }
+        }
+
+        // Navigate to the previous page
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                renderPage(currentPage, canvas, ctx);
+            }
+        }
+
+        // Zoom in the current page
+        function zoomIn() {
+            zoomLevel += 0.1;
+            const canvas = document.getElementById('pdf-canvas');
+            const ctx = canvas.getContext('2d');
+            renderPage(currentPage, canvas, ctx);
+        }
+
+        // Zoom out the current page
+        function zoomOut() {
+            zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+            const canvas = document.getElementById('pdf-canvas');
+            const ctx = canvas.getContext('2d');
+            renderPage(currentPage, canvas, ctx);
         }
 
         // Function to download the book
