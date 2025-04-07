@@ -59,6 +59,7 @@
             cursor: pointer;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -264,16 +265,78 @@
 
         // Check if the selected answer is correct
         function checkAnswer(selected, correctAnswer, quizPopup) {
-            if (selected === correctAnswer) {
-                alert('إجابة صحيحة! يمكنك الاستمرار.');
-                quizPopup.style.display = 'none';
-                nextPage();
-            } else {
-                alert('إجابة خاطئة. من فضلك راجع آخر صفحة.');
-                quizPopup.style.display = 'none';
-                prevPage();
-            }
-        }
+         if (selected === correctAnswer) {
+    let userName = prompt('إجابة صحيحة! أدخل اسمك للحصول على الشهادة:');
+    if (userName) {
+        generateCertificate(userName);
+    }
+    quizPopup.style.display = 'none';
+    nextPage();
+} else {
+    alert('إجابة خاطئة. من فضلك راجع آخر صفحة.');
+    quizPopup.style.display = 'none';
+    prevPage();
+}
+
+async function generateCertificate(userName) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const centerX = pageWidth / 2;
+
+    // Optional: background border
+    doc.setDrawColor(0);
+    doc.setLineWidth(1);
+    doc.rect(10, 10, 190, 277);
+
+    // Logo
+    const logo = new Image();
+    logo.src = 'images/logo.png'; // Your logo path
+
+    logo.onload = function () {
+        doc.addImage(logo, 'PNG', centerX - 15, 15, 30, 30); // Centered logo
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text("Certificate of Completion", centerX, 60, { align: "center" });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(16);
+        doc.text("This certifies that", centerX, 75, { align: "center" });
+
+        doc.setFontSize(18);
+        doc.setTextColor(0, 102, 204);
+        doc.text(userName, centerX, 90, { align: "center" });
+
+        doc.setTextColor(0);
+        doc.setFontSize(16);
+        doc.text("has successfully completed reading", centerX, 105, { align: "center" });
+
+        const bookName = currentBook === 1
+            ? "Fiqh of Fasting Made Easy / فقه الصيام الميسر"
+            : currentBook === 2
+            ? "The Key to Hadith / المفتاح في معرفة الأحاديث"
+            : "One of our books / أحد كتبنا";
+
+        doc.setFontSize(15);
+        doc.text(bookName, centerX, 120, { align: "center" });
+
+        // Arabic/English footer
+        doc.setFontSize(14);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, centerX, 145, { align: "center" });
+
+        doc.setFont("courier", "italic");
+        doc.text("مكتبة المسلم | Muslim Library", centerX, 160, { align: "center" });
+
+        // Save
+        doc.save(`certificate-${userName}.pdf`);
+    };
+}
 
         // Close the quiz
         function closeQuiz() {
