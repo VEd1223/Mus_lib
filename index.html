@@ -319,10 +319,10 @@ async function generateCertificate(userName) {
         doc.text("has successfully completed reading", centerX, 105, { align: "center" });
 
         const bookName = currentBook === 1
-            ? "Fiqh of Fasting Made Easy / فقه الصيام الميسر"
+            ? "Fiqh of Fasting Easy "
             : currentBook === 2
-            ? "The Key to Hadith / المفتاح في معرفة الأحاديث"
-            : "One of our books / أحد كتبنا";
+            ? "The Key to Hadith "
+            : "One of our books ";
 
         doc.setFontSize(15);
         doc.text(bookName, centerX, 120, { align: "center" });
@@ -332,7 +332,7 @@ async function generateCertificate(userName) {
         doc.text(`Date: ${new Date().toLocaleDateString()}`, centerX, 145, { align: "center" });
 
         doc.setFont("courier", "italic");
-        doc.text("مكتبة المسلم | Muslim Library", centerX, 160, { align: "center" });
+        doc.text("Muslim Library", centerX, 160, { align: "center" });
 
         // Save
         doc.save(`certificate-${userName}.pdf`);
